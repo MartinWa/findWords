@@ -57,36 +57,68 @@ class Program
 {
     static void Main()
     {
-        char[,] grid = {
-            {'N', 'D', 'L', 'L'},
-            {'G', 'I', 'S', 'K'},
-            {'R', 'T', 'N', 'R'},
-            {'E', 'Ä', 'N', 'D'}
-        };
-
-        //var stopwatch = new Stopwatch();
-        //stopwatch.Start();
+        //char[,] grid = {
+        //    {'N', 'D', 'L', 'L'},
+        //    {'G', 'I', 'S', 'K'},
+        //    {'R', 'T', 'N', 'R'},
+        //    {'E', 'Ä', 'N', 'D'}
+        //};
+        var grid = GenerateRandomGrid(4, 4);
+        DisplayGrid(grid);
+        var stopwatch = new Stopwatch();
+        stopwatch.Start();
         var words = WordFinder.FindWords(grid).Distinct().Where(s => !string.IsNullOrWhiteSpace(s)).Select(x => x.ToLower()).ToList();
-        //stopwatch.Stop();
-        //Console.WriteLine($"Algorithm took: {stopwatch.ElapsedMilliseconds} ms");
+        stopwatch.Stop();
+        Console.WriteLine($"Algorithm took: {stopwatch.ElapsedMilliseconds} ms");
         // WriteToFileOrdered("all_combinations.txt", words); // Takes about 12s
         var swedishWords = File.ReadAllLines("dictionary\\swedish.txt");
-        //stopwatch.Restart();
         var valid = words.Intersect(swedishWords);
         Console.WriteLine($"Found {valid.Count()} swedish words");
-        //stopwatch.Stop();
-        //Console.WriteLine($"Intersect took: {stopwatch.ElapsedMilliseconds} ms");
         WriteToFileOrdered("all_valid.txt", valid);
     }
 
     static void WriteToFileOrdered(string fileName, IEnumerable<string> list)
     {
-        //var stopwatch = new Stopwatch();
-        //stopwatch.Start();
         var swedishCulture = new CultureInfo("sv-SE");
         var ordered = list.OrderBy(word => word.Length).ThenBy(w => w, StringComparer.Create(swedishCulture, true));
         File.WriteAllLines($"result\\{fileName}", ordered);
-        //stopwatch.Stop();
-        //Console.WriteLine($"Ordering and writing to {fileName} took: {stopwatch.ElapsedMilliseconds} ms");
+    }
+
+    static char[,] GenerateRandomGrid(int rows, int cols)
+    {
+        char[,] grid = new char[rows, cols];
+        Random random = new Random();
+
+        // Define the set of characters to choose from, including Swedish characters
+        string charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÅ";
+
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                // Generate a random index to choose a character from the charSet
+                int index = random.Next(0, charSet.Length);
+                char randomChar = charSet[index];
+                grid[i, j] = randomChar;
+            }
+        }
+
+        return grid;
+    }
+
+    static void DisplayGrid(char[,] grid)
+    {
+        int rows = grid.GetLength(0);
+        int cols = grid.GetLength(1);
+
+        Console.WriteLine("Using grid:");
+        for (int i = 0; i < rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+                Console.Write(grid[i, j] + " ");
+            }
+            Console.WriteLine();
+        }
     }
 }
