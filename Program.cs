@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics;
+using System.Globalization;
 
 class WordFinder
 {
@@ -27,7 +28,7 @@ class WordFinder
         visited[x, y] = true;
 
         if (word.Length >= 3)
-        { 
+        {
             // Minimum word length constraint
             words.Add(word);
         }
@@ -63,18 +64,29 @@ class Program
             {'E', 'Ä', 'N', 'D'}
         };
 
-        var swedishCulture = new CultureInfo("sv-SE");
-        var words = WordFinder.FindWords(grid).Distinct().Select(x => x.ToLower());
-        WriteToFileOrdered("all_combinations.txt", words);
+        //var stopwatch = new Stopwatch();
+        //stopwatch.Start();
+        var words = WordFinder.FindWords(grid).Distinct().Where(s => !string.IsNullOrWhiteSpace(s)).Select(x => x.ToLower()).ToList();
+        //stopwatch.Stop();
+        //Console.WriteLine($"Algorithm took: {stopwatch.ElapsedMilliseconds} ms");
+        // WriteToFileOrdered("all_combinations.txt", words); // Takes about 12s
         var swedishWords = File.ReadAllLines("dictionary\\swedish.txt");
+        //stopwatch.Restart();
         var valid = words.Intersect(swedishWords);
+        Console.WriteLine($"Found {valid.Count()} swedish words");
+        //stopwatch.Stop();
+        //Console.WriteLine($"Intersect took: {stopwatch.ElapsedMilliseconds} ms");
         WriteToFileOrdered("all_valid.txt", valid);
     }
 
     static void WriteToFileOrdered(string fileName, IEnumerable<string> list)
     {
+        //var stopwatch = new Stopwatch();
+        //stopwatch.Start();
         var swedishCulture = new CultureInfo("sv-SE");
         var ordered = list.OrderBy(word => word.Length).ThenBy(w => w, StringComparer.Create(swedishCulture, true));
         File.WriteAllLines($"result\\{fileName}", ordered);
+        //stopwatch.Stop();
+        //Console.WriteLine($"Ordering and writing to {fileName} took: {stopwatch.ElapsedMilliseconds} ms");
     }
 }
